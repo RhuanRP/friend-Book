@@ -2,6 +2,7 @@ package controller;
 
 import model.autorBean;
 import model.autorDao;
+import model.editoraBean;
 import view.autorGUI;
 
 import java.sql.Connection;
@@ -62,5 +63,10 @@ public class autorController {
         return success;
 
     }
+    
+    public List<autorBean> mostrarInativos() {
+      	 List<autorBean> autor = autorDao.mostrarInativos();
+           return autor;    	
+      }
 
 }

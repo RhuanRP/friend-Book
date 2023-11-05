@@ -2,6 +2,7 @@ package controller;
 
 import model.editoraBean;
 import model.editoraDAO;
+import model.livroBean;
 import view.EditoraGUI;
 import view.autorGUI;
 
@@ -38,7 +39,6 @@ public class editoraController {
 
     public List<editoraBean> listarTodasEditoras(String search) {
         List<editoraBean> editoras = editoraDAO.listarTodasEditoras(search);
-        System.out.println(editoras);
         return editoras;
     }
 
@@ -62,7 +62,11 @@ public class editoraController {
             LOGGER.log(Level.SEVERE, "Falha ao excluir a editora: ");
         }
         return success;
-
     }
+    
+    public List<editoraBean> mostrarInativos() {
+   	 List<editoraBean> editora = editoraDAO.mostrarInativos();
+        return editora;    	
+   }
 
 }

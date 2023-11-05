@@ -34,14 +34,14 @@ public class autorDao {
 
 	public List<autorBean> listarTodosAutores(String search) {
 		List<autorBean> autores = new ArrayList<>();
-		String query = "SELECT * FROM autores WHERE Excluidos = 0 AND Nome like '%" + search + "%'";
+		String query = "SELECT * FROM autores WHERE Excluidos = 0 AND status <> 'Inativo' AND Nome like '%" + search + "%'";
 
 		try (PreparedStatement psmt = connection.prepareStatement(query); ResultSet rs = psmt.executeQuery()) {
 			while (rs.next()) {
 				int Id = rs.getInt("Id");
 				String Nome = rs.getString("Nome");
-				String Status = rs.getString("Status");
 				String Documento = rs.getString("Documento");
+				String Status = rs.getString("Status");
 				boolean excluido = rs.getBoolean("Excluidos");
 				autores.add(new autorBean(Id, Nome, Documento, Status, excluido));
 			}
@@ -57,8 +57,8 @@ public class autorDao {
 
 		try (PreparedStatement psmt = connection.prepareStatement(query)) {
 			psmt.setString(1, autores.getNome());
-			psmt.setString(2, autores.getStatus());
-			psmt.setString(3, autores.getDocumento());
+			psmt.setString(2, autores.getDocumento());
+			psmt.setString(3, autores.getStatus());
 			psmt.setInt(4, autores.getId());
 
 			int rowsAffected = psmt.executeUpdate();
@@ -84,6 +84,28 @@ public class autorDao {
 			e.printStackTrace();
 			return false;
 		}
+	}
+	
+	public List<autorBean> mostrarInativos() {
+		
+		 List<autorBean> autor = new ArrayList<>();
+		    String query = "SELECT Id, Nome, Documento, Status FROM autores WHERE Status = 'inativo' AND Excluidos = 0";
+
+		    try (PreparedStatement psmt = connection.prepareStatement(query)) {
+		        try (ResultSet rs = psmt.executeQuery()) {
+		            while (rs.next()) {
+		                int Id = rs.getInt("Id");
+		                String Nome = rs.getString("Nome");
+		                String Documento = rs.getString("Documento");
+		                String Status = rs.getString("Status");
+		                autor.add(new autorBean(Id, Nome, Documento,Status, false));
+		            }
+		        }
+		    } catch (SQLException e) {
+		        e.printStackTrace();
+		    }
+
+		    return autor;
 	}
 
 }

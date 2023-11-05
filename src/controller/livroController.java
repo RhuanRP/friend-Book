@@ -23,8 +23,8 @@ public class livroController {
         this.livroDao = new livroDao(connection);
     }
 
-    public boolean adicionarLivro( String Titulo, int idEditora, int idAutor, String Status) {
-        livroBean livro = new livroBean(0, Titulo, idEditora, idAutor, Status, false);
+    public boolean adicionarLivro( String Titulo, String Status, int idEditora, int idAutor) {
+        livroBean livro = new livroBean(0, Titulo, Status, idEditora, idAutor, false);
         boolean success = livroDao.adicionarLivro(livro);
         if (success) {
             LOGGER.log(Level.INFO, "Livro adicionada com sucesso: " + Titulo);
@@ -34,17 +34,14 @@ public class livroController {
         return success;
     }
     
-	public List<Integer> listarEditorasIDs() {
-		return livroDao.listarEditorasIDs();
-	}
     
     public List<livroBean> listarTodosLivros(String search) {
         List<livroBean> livros = livroDao.listarTodosLivros(search);
         return livros;
     }
 
-    public boolean atualizarLivros(int id, String Titulo, int Editora, int Autor, String Status) {
-        livroBean livro = new livroBean(id, Titulo, Editora, Autor, Status, false);
+    public boolean atualizarLivros(int id, String Titulo, String Status) {
+        livroBean livro = new livroBean(id, Titulo, Status, id, id, false);
         boolean success = livroDao.atualizarLivros(livro);
         if (success) {
             LOGGER.log(Level.INFO, "Livro atualizado com sucesso: " + Titulo);
@@ -64,7 +61,11 @@ public class livroController {
             LOGGER.log(Level.SEVERE, "Falha ao excluir a Livro: ");
         }
         return success;
-
+    }
+    
+    public List<livroBean> mostrarInativos() {
+    	 List<livroBean> livros = livroDao.mostrarInativos();
+         return livros;    	
     }
 
 }

@@ -29,7 +29,9 @@ import javax.swing.JDialog;
 import controller.livroController;
 import model.livroBean;
 import model.mySqlDAO;
+import controller.autorController;
 import controller.editoraController;
+import model.autorBean;
 import model.editoraBean;
 import model.editoraDAO;
 
@@ -41,6 +43,7 @@ public class livroGUI extends JFrame {
     private JButton addButton; 
     private JButton deleteButton; 
     private JButton editButton;
+    private boolean showInativos = false;
     private livroController livroController;
 	protected Connection connection;
 
@@ -76,8 +79,8 @@ public class livroGUI extends JFrame {
                 
                 Connection connection = mySqlDAO.getConnection();
                 editoraController editoraController = new editoraController(connection);
+                autorController autorController = new autorController(connection);
                 
-
                 JPanel panel = new JPanel(new GridLayout(4, 2));
 
                 JLabel tituloLabel = new JLabel("Título do Livro:");
@@ -89,27 +92,46 @@ public class livroGUI extends JFrame {
                 DefaultComboBoxModel editoraComboBoxModel = (DefaultComboBoxModel)editoraComboBox.getModel();
                 
                 List<editoraBean> editoras = editoraController.listarTodasEditoras("");
-                System.out.print(editoras);
                 editoras.forEach((editoraBean editora) -> {
                 	editoraComboBoxModel.addElement(editora.getRazaoSocial());
                 });
                 editoraComboBox.setModel(editoraComboBoxModel);
-
- 
-                JLabel autorLabel = new JLabel("Autor:");
+                               
+                JComboBox<String> autorComboBox;
+                JLabel autorLabel = new JLabel("Autor");
                 autorComboBox = new JComboBox<>();
+                DefaultComboBoxModel autorComboBoxModel = (DefaultComboBoxModel)autorComboBox.getModel();
                 
-                
-
+                List<autorBean> autores = autorController.listarTodosAutores("");
+                autores.forEach((autorBean autor) -> {
+                	autorComboBoxModel.addElement(autor.getNome());
+                });
+                autorComboBox.setModel(autorComboBoxModel);
+              
                 JButton cadastrarButton = new JButton("Cadastrar");
                 cadastrarButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         String titulo = tituloField.getText();
-                        int editora = (int) editoraComboBox.getSelectedItem();
-                        int autor = (int) autorComboBox.getSelectedItem();
-                        dispose(); 
-                    }
+//                        String editora = (String) editoraComboBox.getSelectedItem();
+                        int indexEditora = editoraComboBox.getSelectedIndex();
+                        editoraBean editorass = editoras.get(indexEditora);
+                        int indexAutor = autorComboBox.getSelectedIndex();
+                        autorBean autoress = autores.get(indexAutor);
+//                        String autor = (String) autorComboBox.getSelectedItem();
+                        
+                            boolean success = livroController.adicionarLivro(titulo, "Ativo", editorass.getId(), autoress.getId());
+                            
+                            if (success) {
+                                JOptionPane.showMessageDialog(livroGUI.this, "Novo livro adcionado com sucesso.");
+                                List<livroBean> livros = livroController.listarTodosLivros("");
+                                updateTable(livros);
+                            } else {
+                                JOptionPane.showMessageDialog(livroGUI.this, "Erro ao adicionar o novo livro.");
+                            }
+                       
+                        dispose();
+                }
                 });
 
                 panel.add(tituloLabel);
@@ -137,7 +159,7 @@ public class livroGUI extends JFrame {
                 }
             }
         });
-
+       
 
         deleteButton.addActionListener(new ActionListener() {
             @Override
@@ -155,6 +177,9 @@ public class livroGUI extends JFrame {
                 }
             }
         });
+        
+        String[] statusOptions = {"Ativo", "Inativo"};
+        JComboBox<String> statusComboBox = new JComboBox<>(statusOptions);
 
         editButton.addActionListener(new ActionListener() {
             @Override
@@ -164,30 +189,20 @@ public class livroGUI extends JFrame {
                     int id = (int) livroTable.getValueAt(selectedRow, 0);
                     String novoTitulo = JOptionPane.showInputDialog("Novo Título:");
                     if (novoTitulo != null && !novoTitulo.isEmpty()) {
-                        String novaEditoraInput = JOptionPane.showInputDialog("Nova Editora:");
-                        if (novaEditoraInput != null && !novaEditoraInput.isEmpty()) {
-                            int novaEditora = Integer.parseInt(novaEditoraInput);
-                            String novoAutorInput = JOptionPane.showInputDialog("Novo Autor:");
-                            if (novoAutorInput != null && !novoAutorInput.isEmpty()) {
-                                int novoAutor = Integer.parseInt(novoAutorInput);
-                                String novoStatus = JOptionPane.showInputDialog("Novo Status:", "Ativo");
-                                if (novoStatus != null && !novoStatus.isEmpty()) {
-                                    boolean success = livroController.atualizarLivros(id, novoTitulo, novaEditora, novoAutor, novoStatus);
-                                    if (success) {
-                                        JOptionPane.showMessageDialog(livroGUI.this, "Livro editado com sucesso.");
-                                        List<livroBean> livros = livroController.listarTodosLivros("");
-                                        updateTable(livros);
-                                    } else {
-                                        JOptionPane.showMessageDialog(livroGUI.this, "Erro ao atualizar o livro.");
-                                    }
-                                } else {
-                                    JOptionPane.showMessageDialog(livroGUI.this, "O novo status não pode ser nulo ou vazio.");
-                                }
+                        JComboBox<String> statusComboBox = new JComboBox<>(statusOptions);
+                        int option = JOptionPane.showConfirmDialog(livroGUI.this, statusComboBox, "Selecione o novo status:", JOptionPane.OK_CANCEL_OPTION);
+                        if (option == JOptionPane.OK_OPTION) {
+                            String novoStatus = (String) statusComboBox.getSelectedItem();
+                            boolean success = livroController.atualizarLivros(id, novoTitulo, novoStatus);
+                            if (success) {
+                                JOptionPane.showMessageDialog(livroGUI.this, "Livro editado com sucesso.");
+                                List<livroBean> livros = livroController.listarTodosLivros("");
+                                updateTable(livros);
                             } else {
-                                JOptionPane.showMessageDialog(livroGUI.this, "O novo Autor não pode ser nulo ou vazio.");
+                                JOptionPane.showMessageDialog(livroGUI.this, "Erro ao atualizar o livro.");
                             }
                         } else {
-                            JOptionPane.showMessageDialog(livroGUI.this, "A nova Editora não pode ser nula ou vazia.");
+                            JOptionPane.showMessageDialog(livroGUI.this, "Você cancelou a edição.");
                         }
                     } else {
                         JOptionPane.showMessageDialog(livroGUI.this, "O novo Título não pode ser nulo ou vazio.");
@@ -196,7 +211,8 @@ public class livroGUI extends JFrame {
             }
         });
 
-					
+        
+
         searchPanel.add(new JLabel("Titulo do livro: "));
         searchPanel.add(searchField);
         searchPanel.add(searchButton);
@@ -210,13 +226,40 @@ public class livroGUI extends JFrame {
         JScrollPane scrollPane = new JScrollPane(livroTable);
         getContentPane().add(searchPanel, BorderLayout.NORTH);
         getContentPane().add(scrollPane, BorderLayout.CENTER);
+        
+        JCheckBox showInativosCheckBox = new JCheckBox("Mostrar Inativos");
+        searchPanel.add(showInativosCheckBox);
+				
+        showInativosCheckBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                boolean showInativos = showInativosCheckBox.isSelected();
+                if (showInativos) {
+                    List<livroBean> livros = livroController.mostrarInativos();
+                    updateTable(livros);
+                } else {
+                    List<livroBean> livros = livroController.listarTodosLivros("");
+                    updateTableInativo(livros);
+                }
+            }
+        });
     }
+
 
     private void updateTable(List<livroBean> livroes) {
         tableModel.setRowCount(0);
         for (livroBean livro : livroes) {
             if (!livro.isExcluido()) {
-                tableModel.addRow(new Object[]{livro.getId(), livro.getTitulo(), livro.getIdEditora(), livro.getIdAutor(), livro.getStatus()});
+                tableModel.addRow(new Object[]{livro.getId(), livro.getTitulo(), livro.getNomeEditora(), livro.getNomeAutor(), livro.getStatus()});
+            }
+        }
+    }
+    
+    private void updateTableInativo(List<livroBean> livros) {
+        tableModel.setRowCount(0);
+        for (livroBean livro : livros) {
+            if (!livro.isExcluido() && (showInativos || !livro.getStatus().equalsIgnoreCase("Inativo"))) {
+                tableModel.addRow(new Object[]{livro.getId(), livro.getTitulo(), livro.getNomeEditora(), livro.getNomeAutor(), livro.getStatus()});
             }
         }
     }

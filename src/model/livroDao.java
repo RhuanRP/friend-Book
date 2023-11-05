@@ -16,13 +16,13 @@ public class livroDao {
 	}
 
 	public boolean adicionarLivro(livroBean livros) {
-		String query = "INSERT INTO livros (Titulo, idEditora, idAutor, Status) VALUES (?, ?, ?, ?)";
+		String query = "INSERT INTO livros (Titulo, Status, idEditora, idAutor) VALUES (?, ?, ?, ?)";
 
 		try (PreparedStatement psmt = connection.prepareStatement(query)) {
 			psmt.setString(1, livros.getTitulo());
-			psmt.setInt(2, livros.getIdEditora());
-			psmt.setInt(3, livros.getIdAutor());
-			psmt.setString(4, livros.getStatus());
+			psmt.setString(2, livros.getStatus());
+			psmt.setInt(3, livros.getIdEditora());
+			psmt.setInt(4, livros.getIdAutor());
 
 			int rowsAffected = psmt.executeUpdate();
 
@@ -32,44 +32,15 @@ public class livroDao {
 			return false;
 		}
 	}
-	
-	public List<Integer> listarEditorasIDs() {
-	    List<Integer> editoraIDs = new ArrayList<>();
-	    String query = "SELECT id FROM Editora";
-
-	    try (PreparedStatement psmt = connection.prepareStatement(query); ResultSet rs = psmt.executeQuery()) {
-	        while (rs.next()) {
-	            int idEditora = rs.getInt("id");
-	            editoraIDs.add(idEditora);
-	        }
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	    }
-
-	    return editoraIDs;
-	}
-
-
-	public List<Integer> listarAutoresIDs() {
-	    List<Integer> autorIDs = new ArrayList<>();
-	    String query = "SELECT id FROM Autores";
-
-	    try (PreparedStatement psmt = connection.prepareStatement(query); ResultSet rs = psmt.executeQuery()) {
-	        while (rs.next()) {
-	            int idAutor = rs.getInt("idAutor");
-	            autorIDs.add(idAutor);
-	        }
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	    }
-
-	    return autorIDs;
-	}
-
 
 	public List<livroBean> listarTodosLivros(String search) {
 	    List<livroBean> livros = new ArrayList<>();
-	    String query = "SELECT Id, Titulo, idEditora, idAutor, Status FROM livros WHERE Titulo LIKE ? AND Excluidos = 0";
+	    String query = "SELECT l.Id, Titulo, idEditora, idAutor, l.Status, e.RazaoSocial, a.Nome\r\n"
+	    		+ "FROM livros as l\r\n"
+	    		+ "JOIN editora as e ON e.id = l.idEditora\r\n"
+	    		+ "JOIN autores as a ON a.id = l.idAutor\r\n"
+	    		+ "WHERE Titulo LIKE ? AND l.Excluidos = 0 AND l.Status <> 'Inativo';\r\n"
+	    		+ "";
 
 	    try (PreparedStatement psmt = connection.prepareStatement(query)) {
 	        psmt.setString(1, "%" + search + "%");
@@ -80,7 +51,9 @@ public class livroDao {
 	                int idEditora = rs.getInt("idEditora");
 	                int idAutor = rs.getInt("idAutor");
 	                String Status = rs.getString("Status");
-	                livros.add(new livroBean(Id, Titulo, idEditora, idAutor, Status, false));
+	                String nomeEditora = rs.getString("RazaoSocial");
+	                String nomeAutor = rs.getString("Nome");
+	                livros.add(new livroBean(Id, Titulo, Status, idEditora, idAutor, false).setNomeEditora(nomeEditora).setNomeAutor(nomeAutor));
 	            }
 	        }
 	    } catch (SQLException e) {
@@ -122,6 +95,30 @@ public class livroDao {
 			e.printStackTrace();
 			return false;
 		}
+	}
+	
+	public List<livroBean> mostrarInativos() {
+		
+		 List<livroBean> livros = new ArrayList<>();
+		    String query = "SELECT l.Id, Titulo, idEditora, idAutor, l.Status, e.RazaoSocial, a.Nome FROM livros as l join editora as e on e.id = l.idEditora join autores as a on a.id = l.idAutor WHERE l.Status = 'inativo' AND l.Excluidos = 0";
+		    try (PreparedStatement psmt = connection.prepareStatement(query)) {
+		        try (ResultSet rs = psmt.executeQuery()) {
+		            while (rs.next()) {
+		                int Id = rs.getInt("Id");
+		                String Titulo = rs.getString("Titulo");
+		                int idEditora = rs.getInt("idEditora");
+		                int idAutor = rs.getInt("idAutor");
+		                String Status = rs.getString("Status");
+		                String nomeEditora = rs.getString("RazaoSocial");
+		                String nomeAutor = rs.getString("Nome");
+		                livros.add(new livroBean(Id, Titulo, Status, idEditora, idAutor, false).setNomeEditora(nomeEditora).setNomeAutor(nomeAutor));
+		            }
+		        }
+		    } catch (SQLException e) {
+		        e.printStackTrace();
+		    }
+
+		    return livros;
 	}
 
 }

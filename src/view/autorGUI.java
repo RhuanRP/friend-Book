@@ -24,6 +24,8 @@ import javax.swing.JComboBox;
 
 import controller.autorController;
 import model.autorBean;
+import model.editoraBean;
+import model.livroBean;
 import model.mySqlDAO;
 
 public class autorGUI extends JFrame {
@@ -34,6 +36,7 @@ public class autorGUI extends JFrame {
     private JButton addButton; 
     private JButton deleteButton; 
     private JButton editButton;
+    private boolean showInativos = false;
     private autorController autorController;
 	protected Connection connection;
 
@@ -56,26 +59,42 @@ public class autorGUI extends JFrame {
             List<autorBean> autores = autorController.listarTodosAutores(search);
             updateTable(autores);
         });
+        
+        String[] statusOptions = {"Ativo", "Inativo"};
+        JComboBox<String> statusComboBox = new JComboBox<>(statusOptions);
+
 
         addButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String nome = JOptionPane.showInputDialog("Informe o nome:");
-                String documento = JOptionPane.showInputDialog("Informe o documento:");
-                
                 if (nome != null && !nome.isEmpty()) {
-                    boolean success = autorController.adicionarAutor(nome, documento, "Ativo");
-                    
-                    if (success) {
-                        JOptionPane.showMessageDialog(autorGUI.this, "Novo Autor adicionado com sucesso.");
-                        List<autorBean> autores = autorController.listarTodosAutores("");
-                        updateTable(autores);
+                    String documento = JOptionPane.showInputDialog("Informe o documento:");
+                    if (documento != null && !documento.isEmpty()) {
+                        JComboBox<String> statusComboBox = new JComboBox<>(statusOptions);
+                        int option = JOptionPane.showConfirmDialog(autorGUI.this, statusComboBox, "Selecione o status:", JOptionPane.OK_CANCEL_OPTION);
+                        if (option == JOptionPane.OK_OPTION) {
+                            String status = (String) statusComboBox.getSelectedItem();
+                            boolean success = autorController.adicionarAutor(nome, documento, status);
+                            if (success) {
+                                JOptionPane.showMessageDialog(autorGUI.this, "Novo Autor adicionado com sucesso.");
+                                List<autorBean> autores = autorController.listarTodosAutores("");
+                                updateTable(autores);
+                            } else {
+                                JOptionPane.showMessageDialog(autorGUI.this, "Erro ao adicionar o novo autor.");
+                            }
+                        } else {
+                            JOptionPane.showMessageDialog(autorGUI.this, "Você cancelou a adição.");
+                        }
                     } else {
-                        JOptionPane.showMessageDialog(autorGUI.this, "Erro ao adicionar o novo autor.");
+                        JOptionPane.showMessageDialog(autorGUI.this, "O documento não pode ser nulo ou vazio.");
                     }
+                } else {
+                    JOptionPane.showMessageDialog(autorGUI.this, "O nome não pode ser nulo ou vazio.");
                 }
             }
         });
+
 
         deleteButton.addActionListener(new ActionListener() {
             @Override
@@ -100,34 +119,35 @@ public class autorGUI extends JFrame {
                 int selectedRow = autorTable.getSelectedRow();
                 if (selectedRow >= 0) {
                     int id = (int) autorTable.getValueAt(selectedRow, 0);
-                    
                     String novoNome = (String) JOptionPane.showInputDialog("Novo Nome:");
                     if (novoNome != null && !novoNome.isEmpty()) {
-                        	String novoDocumento = (String) JOptionPane.showInputDialog("Novo documento:");
-                        	if(novoDocumento != null && !novoDocumento.isEmpty()) {
-                        		String novoStatus = (String) JOptionPane.showInputDialog("Novo Status:", "Ativo");
-                                if (novoStatus != null && !novoStatus.isEmpty()) {
-                            boolean success = autorController.atualizarAutor(id, novoNome, novoDocumento, novoStatus);
-                            if (success) {
-                                JOptionPane.showMessageDialog(autorGUI.this, "Autor editado com sucesso.");
-                                List<autorBean> autores = autorController.listarTodosAutores("");
-                                updateTable(autores);
+                        String novoDocumento = (String) JOptionPane.showInputDialog("Novo documento:");
+                        if (novoDocumento != null && !novoDocumento.isEmpty()) {
+                            JComboBox<String> statusComboBox = new JComboBox<>(statusOptions);
+                            int option = JOptionPane.showConfirmDialog(autorGUI.this, statusComboBox, "Selecione o status:", JOptionPane.OK_CANCEL_OPTION);
+                            if (option == JOptionPane.OK_OPTION) {
+                                String novoStatus = (String) statusComboBox.getSelectedItem();
+                                boolean success = autorController.atualizarAutor(id, novoNome, novoDocumento, novoStatus);
+                                if (success) {
+                                    JOptionPane.showMessageDialog(autorGUI.this, "Autor editado com sucesso.");
+                                    List<autorBean> autores = autorController.listarTodosAutores("");
+                                    updateTable(autores);
+                                } else {
+                                    JOptionPane.showMessageDialog(autorGUI.this, "Erro ao atualizar o autor.");
+                                }
                             } else {
-                                JOptionPane.showMessageDialog(autorGUI.this, "Erro ao atualizar o autor.");
+                                JOptionPane.showMessageDialog(autorGUI.this, "Você cancelou a edição.");
                             }
-                            
                         } else {
-                            JOptionPane.showMessageDialog(autorGUI.this, "O novo status não pode ser nulo ou vazio.");
+                            JOptionPane.showMessageDialog(autorGUI.this, "O novo documento não pode ser nulo ou vazio.");
                         }
                     } else {
                         JOptionPane.showMessageDialog(autorGUI.this, "O novo nome não pode ser nulo ou vazio.");
                     }
                 }
             }
-            }
         });
-
-					
+		
 
         searchPanel.add(new JLabel("Nome do autor: "));
         searchPanel.add(searchField);
@@ -142,7 +162,25 @@ public class autorGUI extends JFrame {
         JScrollPane scrollPane = new JScrollPane(autorTable);
         getContentPane().add(searchPanel, BorderLayout.NORTH);
         getContentPane().add(scrollPane, BorderLayout.CENTER);
+        
+        JCheckBox showInativosCheckBox = new JCheckBox("Mostrar Inativos");
+        searchPanel.add(showInativosCheckBox);
+				
+        showInativosCheckBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                boolean showInativos = showInativosCheckBox.isSelected();
+                if (showInativos) {
+                    List<autorBean> autores = autorController.mostrarInativos();
+                    updateTable(autores);
+                } else {
+                    List<autorBean> autores = autorController.listarTodosAutores("");
+                    updateTableInativos(autores);
+                }
+            }
+        });
     }
+    
 
     private void updateTable(List<autorBean> autores) {
         tableModel.setRowCount(0);
@@ -152,7 +190,15 @@ public class autorGUI extends JFrame {
             }
         }
     }
-
+    
+    private void updateTableInativos(List<autorBean> autores) {
+        tableModel.setRowCount(0);
+        for (autorBean autor : autores) {
+            if (!autor.isExcluido( )&& (showInativos || !autor.getStatus().equalsIgnoreCase("Inativo"))){
+                tableModel.addRow(new Object[]{autor.getId(), autor.getNome(), autor.getDocumento(), autor.getStatus()});
+            }
+        }
+    }
 
     public static void main(String[] args) {
     	

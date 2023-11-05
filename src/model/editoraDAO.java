@@ -33,7 +33,7 @@ public class editoraDAO {
 
 	public List<editoraBean> listarTodasEditoras(String search) {
 		List<editoraBean> editora = new ArrayList<>();
-		String query = "SELECT * FROM editora WHERE Excluidos = 0 AND razaoSocial like '%" + search + "%'";
+		String query = "SELECT * FROM editora WHERE Excluidos = 0 AND status <> 'Inativo' AND razaoSocial like '%" + search + "%'";
 
 		try (PreparedStatement psmt = connection.prepareStatement(query); ResultSet rs = psmt.executeQuery()) {
 			while (rs.next()) {
@@ -70,8 +70,6 @@ public class editoraDAO {
 
 	public boolean marcarComoExcluido(editoraBean editora) {
 		String query = "UPDATE editora SET Excluidos = " + true + " WHERE Id = " + editora.getId();
-		System.out.println(query);
-
 		try {
 			PreparedStatement psmt = connection.prepareStatement(query);
 
@@ -82,6 +80,27 @@ public class editoraDAO {
 			e.printStackTrace();
 			return false;
 		}
+	}
+	
+	public List<editoraBean> mostrarInativos() {
+		
+		 List<editoraBean> editora = new ArrayList<>();
+		    String query = "SELECT Id, RazaoSocial, Status FROM editora WHERE Status = 'inativo' AND Excluidos = 0";
+
+		    try (PreparedStatement psmt = connection.prepareStatement(query)) {
+		        try (ResultSet rs = psmt.executeQuery()) {
+		            while (rs.next()) {
+		                int Id = rs.getInt("Id");
+		                String RazaoSocial = rs.getString("RazaoSocial");
+		                String Status = rs.getString("Status");
+		                editora.add(new editoraBean(Id, RazaoSocial, Status, false));
+		            }
+		        }
+		    } catch (SQLException e) {
+		        e.printStackTrace();
+		    }
+
+		    return editora;
 	}
 
 }
