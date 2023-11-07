@@ -22,14 +22,14 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JComboBox;
 
-import controller.autorController;
-import model.autorBean;
-import model.editoraBean;
+import controller.amigosController;
+import model.amigosBean;
+import model.amigosBean;
 import model.livroBean;
 import model.mySqlDAO;
 
-public class autorGUI extends JFrame {
-    private JTable autorTable;
+public class amigosGUI extends JFrame {
+    private JTable amigosTable;
     private DefaultTableModel tableModel;
     private JTextField searchField;
     private JButton searchButton;
@@ -37,12 +37,12 @@ public class autorGUI extends JFrame {
     private JButton deleteButton; 
     private JButton editButton;
     private boolean showInativos = false;
-    private autorController autorController;
+    private amigosController amigosController;
 	protected Connection connection;
 
-    public autorGUI(autorController controller) {
-        this.autorController = controller;
-        setTitle("Lista de Autores");
+    public amigosGUI(amigosController controller) {
+        this.amigosController = controller;
+        setTitle("Amigos");
         setSize(1000, 500);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
@@ -56,8 +56,8 @@ public class autorGUI extends JFrame {
 
         searchButton.addActionListener(e -> {
         	String search = searchField.getText();
-            List<autorBean> autores = autorController.listarTodosAutores(search);
-            updateTable(autores);
+            List<amigosBean> amigos = amigosController.listarTodosAmigo(search);
+            updateTable(amigos);
         });
         
         String[] statusOptions = {"Ativo", "Inativo"};
@@ -72,25 +72,25 @@ public class autorGUI extends JFrame {
                     String documento = JOptionPane.showInputDialog("Informe o documento:");
                     if (documento != null && !documento.isEmpty()) {
                         JComboBox<String> statusComboBox = new JComboBox<>(statusOptions);
-                        int option = JOptionPane.showConfirmDialog(autorGUI.this, statusComboBox, "Selecione o status:", JOptionPane.OK_CANCEL_OPTION);
+                        int option = JOptionPane.showConfirmDialog(amigosGUI.this, statusComboBox, "Selecione o status:", JOptionPane.OK_CANCEL_OPTION);
                         if (option == JOptionPane.OK_OPTION) {
                             String status = (String) statusComboBox.getSelectedItem();
-                            boolean success = autorController.adicionarAutor(nome, documento, status);
+                            boolean success = amigosController.adicionarAmigo(nome, documento, status);
                             if (success) {
-                                JOptionPane.showMessageDialog(autorGUI.this, "Novo Autor adicionado com sucesso.");
-                                List<autorBean> autores = autorController.listarTodosAutores("");
-                                updateTable(autores);
+                                JOptionPane.showMessageDialog(amigosGUI.this, "Novo Autor adicionado com sucesso.");
+                                List<amigosBean> amigos = amigosController.listarTodosAmigo("");
+                                updateTable(amigos);
                             } else {
-                                JOptionPane.showMessageDialog(autorGUI.this, "Erro ao adicionar o novo autor.");
+                                JOptionPane.showMessageDialog(amigosGUI.this, "Erro ao adicionar o novo autor.");
                             }
                         } else {
-                            JOptionPane.showMessageDialog(autorGUI.this, "Você cancelou a adição.");
+                            JOptionPane.showMessageDialog(amigosGUI.this, "Você cancelou a edição.");
                         }
                     } else {
-                        JOptionPane.showMessageDialog(autorGUI.this, "O documento não pode ser nulo ou vazio.");
+                        JOptionPane.showMessageDialog(amigosGUI.this, "O documento não pode ser nulo ou vazio.");
                     }
                 } else {
-                    JOptionPane.showMessageDialog(autorGUI.this, "O nome não pode ser nulo ou vazio.");
+                    JOptionPane.showMessageDialog(amigosGUI.this, "O nome não pode ser nulo ou vazio.");
                 }
             }
         });
@@ -99,15 +99,15 @@ public class autorGUI extends JFrame {
         deleteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int selectedRow = autorTable.getSelectedRow();
+                int selectedRow = amigosTable.getSelectedRow();
                 if (selectedRow >= 0) {
-                    int id = (int) autorTable.getValueAt(selectedRow, 0);
-                    boolean success = autorController.marcarComoExcluido(id);
+                    int id = (int) amigosTable.getValueAt(selectedRow, 0);
+                    boolean success = amigosController.marcarComoExcluido(id);
                     
                     if (success) {
-                        autorTable.setValueAt("1", selectedRow, 2); 
+                        amigosTable.setValueAt("1", selectedRow, 2); 
                     } else {
-                        JOptionPane.showMessageDialog(autorGUI.this, "Erro ao marcar o registro como excluído.");
+                        JOptionPane.showMessageDialog(amigosGUI.this, "Erro ao marcar o registro como excluído.");
                     }
                 }
             }
@@ -116,40 +116,40 @@ public class autorGUI extends JFrame {
         editButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int selectedRow = autorTable.getSelectedRow();
+                int selectedRow = amigosTable.getSelectedRow();
                 if (selectedRow >= 0) {
-                    int id = (int) autorTable.getValueAt(selectedRow, 0);
+                    int id = (int) amigosTable.getValueAt(selectedRow, 0);
                     String novoNome = (String) JOptionPane.showInputDialog("Novo Nome:");
                     if (novoNome != null && !novoNome.isEmpty()) {
                         String novoDocumento = (String) JOptionPane.showInputDialog("Novo documento:");
                         if (novoDocumento != null && !novoDocumento.isEmpty()) {
                             JComboBox<String> statusComboBox = new JComboBox<>(statusOptions);
-                            int option = JOptionPane.showConfirmDialog(autorGUI.this, statusComboBox, "Selecione o status:", JOptionPane.OK_CANCEL_OPTION);
+                            int option = JOptionPane.showConfirmDialog(amigosGUI.this, statusComboBox, "Selecione o status:", JOptionPane.OK_CANCEL_OPTION);
                             if (option == JOptionPane.OK_OPTION) {
                                 String novoStatus = (String) statusComboBox.getSelectedItem();
-                                boolean success = autorController.atualizarAutor(id, novoNome, novoDocumento, novoStatus);
+                                boolean success = amigosController.atualizarAmigos(id, novoNome, novoDocumento, novoStatus);
                                 if (success) {
-                                    JOptionPane.showMessageDialog(autorGUI.this, "Autor editado com sucesso.");
-                                    List<autorBean> autores = autorController.listarTodosAutores("");
+                                    JOptionPane.showMessageDialog(amigosGUI.this, "Amigo editado com sucesso.");
+                                    List<amigosBean> autores = amigosController.listarTodosAmigo("");
                                     updateTable(autores);
                                 } else {
-                                    JOptionPane.showMessageDialog(autorGUI.this, "Erro ao atualizar o autor.");
+                                    JOptionPane.showMessageDialog(amigosGUI.this, "Erro ao atualizar o amigo.");
                                 }
                             } else {
-                                JOptionPane.showMessageDialog(autorGUI.this, "Você cancelou a edição.");
+                                JOptionPane.showMessageDialog(amigosGUI.this, "Você cancelou a edição.");
                             }
                         } else {
-                            JOptionPane.showMessageDialog(autorGUI.this, "O novo documento não pode ser nulo ou vazio.");
+                            JOptionPane.showMessageDialog(amigosGUI.this, "O novo documento não pode ser nulo ou vazio.");
                         }
                     } else {
-                        JOptionPane.showMessageDialog(autorGUI.this, "O novo nome não pode ser nulo ou vazio.");
+                        JOptionPane.showMessageDialog(amigosGUI.this, "O novo nome não pode ser nulo ou vazio.");
                     }
                 }
             }
         });
 		
 
-        searchPanel.add(new JLabel("Nome do autor: "));
+        searchPanel.add(new JLabel("Nome do amigo: "));
         searchPanel.add(searchField);
         searchPanel.add(searchButton);
         searchPanel.add(addButton);
@@ -157,9 +157,9 @@ public class autorGUI extends JFrame {
         searchPanel.add(editButton);
 
         tableModel = new DefaultTableModel(new String[]{"ID", "Nome", "Documento", "Status"}, 0);
-        autorTable = new JTable(tableModel);
+        amigosTable = new JTable(tableModel);
 
-        JScrollPane scrollPane = new JScrollPane(autorTable);
+        JScrollPane scrollPane = new JScrollPane(amigosTable);
         getContentPane().add(searchPanel, BorderLayout.NORTH);
         getContentPane().add(scrollPane, BorderLayout.CENTER);
         
@@ -171,31 +171,31 @@ public class autorGUI extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 boolean showInativos = showInativosCheckBox.isSelected();
                 if (showInativos) {
-                    List<autorBean> autores = autorController.mostrarInativos();
-                    updateTable(autores);
+                    List<amigosBean> amigos = amigosController.mostrarInativos();
+                    updateTable(amigos);
                 } else {
-                    List<autorBean> autores = autorController.listarTodosAutores("");
-                    updateTableInativos(autores);
+                    List<amigosBean> amigos = amigosController.listarTodosAmigo("");
+                    updateTableInativos(amigos);
                 }
             }
         });
     }
     
 
-    private void updateTable(List<autorBean> autores) {
+    private void updateTable(List<amigosBean> amigos) {
         tableModel.setRowCount(0);
-        for (autorBean autor : autores) {
-            if (!autor.isExcluido()) {
-                tableModel.addRow(new Object[]{autor.getId(), autor.getNome(), autor.getDocumento(), autor.getStatus()});
+        for (amigosBean amigo : amigos) {
+            if (!amigo.isExcluido()) {
+                tableModel.addRow(new Object[]{amigo.getId(), amigo.getNome(), amigo.getDocumento(), amigo.getStatus()});
             }
         }
     }
     
-    private void updateTableInativos(List<autorBean> autores) {
+    private void updateTableInativos(List<amigosBean> amigos) {
         tableModel.setRowCount(0);
-        for (autorBean autor : autores) {
-            if (!autor.isExcluido( )&& (showInativos || !autor.getStatus().equalsIgnoreCase("Inativo"))){
-                tableModel.addRow(new Object[]{autor.getId(), autor.getNome(), autor.getDocumento(), autor.getStatus()});
+        for (amigosBean amigo : amigos) {
+            if (!amigo.isExcluido( )&& (showInativos || !amigo.getStatus().equalsIgnoreCase("Inativo"))){
+                tableModel.addRow(new Object[]{amigo.getId(), amigo.getNome(), amigo.getDocumento(), amigo.getStatus()});
             }
         }
     }
@@ -203,12 +203,12 @@ public class autorGUI extends JFrame {
     public static void main(String[] args) {
     	
     	 Connection connection = mySqlDAO.getConnection();
-    	 autorController autorController = new autorController(connection);
+    	 amigosController amigosController = new amigosController(connection);
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                autorGUI autorGUI = new autorGUI(autorController);
-               autorGUI.setVisible(true);
+                amigosGUI amigosGUI = new amigosGUI(amigosController);
+               amigosGUI.setVisible(true);
             }
         });
     }

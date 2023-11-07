@@ -56,7 +56,8 @@ public class EditoraGUI extends JFrame {
     public EditoraGUI(editoraController controller) {
         this.editoraController = controller;
         setTitle("Lista de Editoras");
-        setSize(800, 400);
+        setSize(1000, 500);
+        setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 
         JPanel searchPanel = new JPanel();
@@ -67,9 +68,9 @@ public class EditoraGUI extends JFrame {
         editButton = new JButton("Editar");
         
         searchButton.addActionListener(e -> {
-        	List<editoraBean> editoras = searchEditora();
+        	String search = searchField.getText();
+        	List<editoraBean> editoras = editoraController.listarTodasEditoras(search);
             updateTable(editoras);
-//            System.out.println(editoras.get(0));
         });
         
         String[] statusOptions = {"Ativo", "Inativo"};
@@ -147,9 +148,7 @@ public class EditoraGUI extends JFrame {
                 }
             }
         });
-
-
-					
+				
         searchPanel.add(new JLabel("Nome da Editora: "));
         searchPanel.add(searchField);
         searchPanel.add(searchButton);
@@ -157,7 +156,7 @@ public class EditoraGUI extends JFrame {
         searchPanel.add(deleteButton);
         searchPanel.add(editButton);
 
-        tableModel = new DefaultTableModel(new String[]{"ID", "Nome", "Status"}, 0);
+        tableModel = new DefaultTableModel(new String[]{"ID", "Razao Social", "Status"}, 0);
         editoraTable = new JTable(tableModel);
 
         JScrollPane scrollPane = new JScrollPane(editoraTable);
@@ -182,7 +181,6 @@ public class EditoraGUI extends JFrame {
         });
     }
 
-    
 	private void updateTable(List<editoraBean> editoras) {
         tableModel.setRowCount(0);
         for (editoraBean editora : editoras) {

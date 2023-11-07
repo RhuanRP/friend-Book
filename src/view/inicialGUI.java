@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -16,6 +17,7 @@ import javax.swing.JMenuItem;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+import controller.amigosController;
 import controller.autorController;
 import controller.editoraController;
 import controller.livroController;
@@ -36,20 +38,21 @@ public class inicialGUI extends JFrame {
 
     public inicialGUI() {
         setTitle("FriendBook");
-        setSize(1600, 800);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
-        getContentPane().setBackground(Color.black);
+        getContentPane().setBackground(Color.LIGHT_GRAY);
         
         JLabel titleLabel = new JLabel("FriendBook", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Serif", Font.PLAIN, 36));
-        titleLabel.setForeground(Color.red);
-        add(titleLabel, BorderLayout.CENTER);
+        titleLabel.setForeground(Color.BLACK);
+        getContentPane().add(titleLabel, BorderLayout.CENTER);
 
         JMenuBar menuBar = new JMenuBar();
 
 
         JMenu menuEditora = new JMenu("Editora");
+        menuEditora.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         JMenuItem listarEditoras = new JMenuItem("Listar Editoras");
 
         listarEditoras.addActionListener(e -> {
@@ -69,6 +72,7 @@ public class inicialGUI extends JFrame {
 
 
         JMenu menuAutores = new JMenu("Autores");
+        menuAutores.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         JMenuItem listarAutores = new JMenuItem("Listar Autores");
 
         listarAutores.addActionListener(e -> {
@@ -85,8 +89,8 @@ public class inicialGUI extends JFrame {
 
         menuAutores.add(listarAutores);
 
-
         JMenu menuLivros = new JMenu("Livros");
+        menuLivros.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         JMenuItem listarLivros = new JMenuItem("Listar Livros");
 
         listarLivros.addActionListener(e -> {
@@ -105,16 +109,26 @@ public class inicialGUI extends JFrame {
         menuLivros.add(listarLivros);
 
         JMenu menuAmigos = new JMenu("Amigos");
+        menuAmigos.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         JMenuItem listarAmigos = new JMenuItem("Listar Amigos");
 
         listarAmigos.addActionListener(e -> {
-
+        	Connection connection = mySqlDAO.getConnection();
+        	amigosController amigosController = new amigosController(connection);
+        	
+        	SwingUtilities.invokeLater(new Runnable() {
+        		public void run() {
+        			amigosGUI amigosGUI = new amigosGUI(amigosController);
+        			amigosGUI.setVisible(true);
+        		}
+        	});
         });
 
         menuAmigos.add(listarAmigos);
-        //listar amigos
+        
 
         JMenu menuEmprestimos = new JMenu("Empréstimos/Devolução");
+        menuEmprestimos.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         JMenuItem listarEmprestimos = new JMenuItem("Listar Empréstimos");
 
         listarEmprestimos.addActionListener(e -> {

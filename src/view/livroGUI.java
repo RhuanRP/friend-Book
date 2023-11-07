@@ -50,7 +50,8 @@ public class livroGUI extends JFrame {
     public livroGUI(livroController controller) {
         this.livroController = controller;
         setTitle("Lista de livros");
-        setSize(800, 400);
+        setSize(1000, 500);
+        setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 
         JPanel searchPanel = new JPanel();
@@ -210,8 +211,6 @@ public class livroGUI extends JFrame {
                 }
             }
         });
-
-        
 
         searchPanel.add(new JLabel("Titulo do livro: "));
         searchPanel.add(searchField);

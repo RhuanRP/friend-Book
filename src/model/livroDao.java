@@ -63,7 +63,6 @@ public class livroDao {
 	    return livros;
 	}
 
-
 	public boolean atualizarLivros(livroBean livros) {
 		String query = "UPDATE livros SET Titulo = ?, Status = ? WHERE Id = ?";
 

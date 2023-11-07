@@ -50,7 +50,6 @@ public class editoraDAO {
 		return editora;
 	}
 	
-
 	public boolean atualizarEditora(editoraBean editora) {
 		String query = "UPDATE editora SET RazaoSocial = ?, Status = ? WHERE Id = ?";
 
